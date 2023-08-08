@@ -3,12 +3,28 @@
 #include <stdio.h>
 
 
-void list_available_dbus_services()
+void introspect_dbus_services(char * path)
 {
     GDBusProxy *proxy;
     GDBusConnection *connection;
     GError *error = NULL;
     GVariant *result;
+    char buffer[1024+1];
+
+    if (strlen(path) >= 1024) {
+        printf("ERROR: The service name is too long\n");
+        return;
+    }
+
+    // convert path A.B.C into /A/B/C
+    strcpy(buffer,"/");
+    strcat(buffer, path);
+    buffer[strlen(path)+1]='\0';
+    for (int i=0; buffer[i] != '\0'; i++) {
+        if (buffer[i] == '.') {
+            buffer[i] = '/';
+        }
+    }
 
     /*
      * We can list the dbus services for the session G_BUS_TYPE_SESSION
@@ -24,16 +40,16 @@ void list_available_dbus_services()
     proxy = g_dbus_proxy_new_sync (connection,
                                 G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
                                 NULL,                               /* GDBusInterfaceInfo */
-                                "org.freedesktop.DBus",             /* name */
-                                "/org/freedesktop/DBus",            /* object path */
-                                "org.freedesktop.DBus.ListNames",   /* interface */
+                                path,                               /* name */
+                                buffer,                               /* object path */
+                                path,   /* interface */
                                 NULL,                               /* GCancellable */
                                 &error);
 
     g_assert_no_error (error);
 
     result = g_dbus_proxy_call_sync (proxy,
-                                   "org.freedesktop.DBus.ListNames",
+                                   "org.freedesktop.DBus.Introspectable.Introspect",
                                    NULL,
                                    G_DBUS_CALL_FLAGS_NONE,
                                    -1,
@@ -44,15 +60,12 @@ void list_available_dbus_services()
     g_assert (result != NULL);
 
     printf("DEBUG: result data type id %s\n", g_variant_get_type_string(result));
-
     {
-        gchar *str;
-        GVariantIter *iter;
-        g_variant_get (result, "(as)", &iter);
-        while (g_variant_iter_loop (iter, "s", &str))
-            g_print ("%s\n", str);
-        g_variant_iter_free (iter);
+        const gchar *xml_data;
+        g_variant_get (result, "(&s)", &xml_data);
+        printf("%s introspection:\n\n%s\n", path, xml_data);
     }
+
     g_variant_unref (result);
     g_object_unref (proxy);
     g_object_unref (connection);
@@ -62,9 +75,15 @@ void list_available_dbus_services()
 int main (int   argc, char *argv[])
 {
     GMainLoop* loop = NULL;
+
+    if (argc == 1) {
+        printf("ERROR: At least one argument is required\n");
+        exit (0);
+    }
+
     loop = g_main_loop_new (NULL, FALSE);
 
-    list_available_dbus_services();
+    introspect_dbus_services(argv[1]);
 
     g_main_loop_unref (loop);
 
