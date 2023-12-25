@@ -1,4 +1,5 @@
-= Resolution de l'énigme à l'aise
+Resolution de l'énigme à l'aise
+---
 
 Que ce soit verticalement ou horizontalement, les suites se comportent comme buffers circulaires
 avec un décalage de 1 lorsque l'on va de gauche à droite ou du haut vers le bas.
