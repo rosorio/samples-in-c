@@ -1,4 +1,4 @@
-# SVN hitory xml parsing
+# SVN history xml parsing
 
 I wrote this code to parse SVN XML history outoput.
 
