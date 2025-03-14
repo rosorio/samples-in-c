@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <ctype.h>
-#include <sys/mman.h>
 
 #define DECODE_VARINT(schifter,  buf, val, idx)         \
         {                                               \
