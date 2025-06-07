@@ -2,7 +2,7 @@
 #include <inttypes.h>
 #include <ctype.h>
 
-#define DECODE_VARINT(buf, val, idx)                    \
+#define DECODE_VARINT(buf, val, idx, buflen)            \
         {                                               \
             uint64_t shifter = 0;                       \
             val = 0;                                    \
@@ -10,7 +10,7 @@
                 idx++;                                  \
                 val |= (buf[idx] & 0x7F) << shifter;    \
                 shifter += 7;                           \
-            } while (buf[idx] & 0x80);                  \
+            } while (buf[idx] & 0x80 && idx < buflen);  \
         }
 
 #define DECODE_FIELD_NUMBER(buf, val, idx)              \
@@ -49,7 +49,7 @@ int parse_protobuf(uint8_t * data, uint64_t len, int deep)
 
         switch (type) {
         case PB_VARINT:
-            DECODE_VARINT(data, j, i);
+            DECODE_VARINT(data, j, i, len);
             printf("%*svarint: uint %" PRIu64 " sint %c%" PRIu64 "\n", deep*2, "",
                 j,
                 j%2 ? '-':'+',
@@ -60,7 +60,7 @@ int parse_protobuf(uint8_t * data, uint64_t len, int deep)
             i += 9;
             break;
         case PB_LEN:
-            DECODE_VARINT(data, j, i);
+            DECODE_VARINT(data, j, i, len);
             i++;
             if ((i + j) > len) {
                 return -1;
