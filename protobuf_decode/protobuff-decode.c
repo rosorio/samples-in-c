@@ -2,9 +2,10 @@
 #include <inttypes.h>
 #include <ctype.h>
 
-#define DECODE_VARINT(schifter,  buf, val, idx)         \
+#define DECODE_VARINT(buf, val, idx)                    \
         {                                               \
-            shifter = 0, val = 0;                       \
+            uint64_t shifter = 0;                       \
+            val = 0;                                    \
             do {                                        \
                 idx++;                                  \
                 val |= (buf[idx] & 0x7F) << shifter;    \
@@ -31,7 +32,6 @@
 
 int parse_protobuf(uint8_t * data, uint64_t len, int deep)
 {
-    uint64_t shifter;
     uint64_t i, j;
     uint8_t type;
     uint8_t number;
@@ -49,7 +49,7 @@ int parse_protobuf(uint8_t * data, uint64_t len, int deep)
 
         switch (type) {
         case PB_VARINT:
-            DECODE_VARINT(shifter, data, j, i);
+            DECODE_VARINT(data, j, i);
             printf("%*svarint: uint %" PRIu64 " sint %c%" PRIu64 "\n", deep*2, "",
                 j,
                 j%2 ? '-':'+',
@@ -60,7 +60,7 @@ int parse_protobuf(uint8_t * data, uint64_t len, int deep)
             i += 9;
             break;
         case PB_LEN:
-            DECODE_VARINT(shifter, data, j, i);
+            DECODE_VARINT(data, j, i);
             i++;
             if ((i + j) > len) {
                 return -1;
