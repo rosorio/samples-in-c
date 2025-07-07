@@ -21,6 +21,7 @@ typedef enum {
 void usage(char *binname)
 {
     printf("%s -f <filename> [-b <time>] [-m <time>] [-a <time>]\n"
+           " -f <set the directory or filename (absolute path)\n"
            " -b set the file birth time (if supported by the filesystem)\n"
            " -m set the file modification time\n"
            " -a set the file access time\n"
@@ -152,19 +153,16 @@ int main(int argc, char * argv[])
         }
     }
 
-    printf("Set BIRTH %ld %s", birth, ctime(&birth));
     if (what_to_change & (ACCESS|MODIF))
     {
         memset(times,0, sizeof(times));
         if (what_to_change & ACCESS) {
-            printf("Set ACCES %ld %s", access, ctime(&access));
             times[0].tv_sec = access;
         } else {
             times[0].tv_nsec = UTIME_OMIT;
         }
 
         if (what_to_change & MODIF) {
-            printf("Set MODIF %ld %s", modification, ctime(&modification));
             times[1].tv_sec = modification;
         } else {
             times[1].tv_nsec = UTIME_OMIT;

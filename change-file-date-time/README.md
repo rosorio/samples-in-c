@@ -5,6 +5,7 @@ the file birth, creation or modification time.
 
 ```
 setfiletime -f <filename> [-b <time>] [-m <time>] [-a <time>]
+ -f <set the directory or filename (absolute path)
  -b set the file birth time (if supported by the filesystem)
  -m set the file modification time
  -a set the file access time
